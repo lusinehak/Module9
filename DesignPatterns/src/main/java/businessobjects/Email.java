@@ -11,8 +11,4 @@ public class Email {
     public String getSubject() {
         return subject;
     }
-
-    public String getContent() {
-        return "";
-    }
 }

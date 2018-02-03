@@ -2,38 +2,41 @@ package tests;
 
 import businessobjects.Email;
 import businessobjects.User;
+import decorator.ExtendedEmail;
+import decorator.SimpleMail;
 import factory.ChromeDriverInstance;
 import factory.DriverFactory;
 import factory.FirefoxDriverInstance;
+import org.testng.Assert;
 import org.testng.annotations.*;
 import pageobjects.LoginPage;
-import pageobjects.MailActionsPage;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.testng.Assert;
-import singleton.WebDriverSingleton;
+import pageobjects.MailActionsPage;
+import singleton.Logger;
+import templates.MailTemplates;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class LoginAndSendEmailTest {
-    private WebDriver driver;
+    private static WebDriver driver;
     private User user;
     private Email email;
     private String URL = "https://accounts.google.com";
 
-   // @Parameters({"browser"})
-    @BeforeClass(alwaysRun = true)
-    public void init(/*@Optional("chrome") String browser*/) {
-        /*DriverFactory driverInstance = new ChromeDriverInstance();
-        driver = driverInstance.createDriver();*/
-        driver = WebDriverSingleton.CreateDriver();
-        /*if(browser == "chrome") {
+
+    @BeforeClass()
+    @Parameters({"browserType"})
+    public void init(@Optional("chrome") String browser) {
+        if(browser.equals("chrome")) {
             DriverFactory driverInstance = new ChromeDriverInstance();
             driver = driverInstance.createDriver();
-        } else if (browser == "firefox") {
+        } else if (browser.equals("firefox")) {
             DriverFactory driverInstance = new FirefoxDriverInstance();
             driver = driverInstance.createDriver();
-        }*/
+        } else {
+            Logger.error("Invalid Browser");
+        }
         user = new User();
         email = new Email();
         driver.get(URL);
@@ -43,43 +46,27 @@ public class LoginAndSendEmailTest {
 
     @Test
     public void login() {
-        System.out.println("aaaaaaaaaaaaa " + user.getUserName());
-        boolean isLoggedIn = new LoginPage().logInAccount(user.getUserName(), user.getPassword()).isLoggedIn();
+        Logger.info("Login test is starting");
+        boolean isLoggedIn = new LoginPage(driver).logInAccount(user.getUserName(),
+                user.getPassword()).isLoggedIn();
         Assert.assertTrue(isLoggedIn, "Login issue");
+        Logger.info("login successfully completed");
     }
 
     @Test(dependsOnMethods = "login")
-    public void composeAndSave() {
-        boolean isSavedInDrafts = new MailActionsPage(driver).composeAndSaveAsDraft(email.getReceiver(), email.getSubject(),
-                email.getContent()).goToFolder("Drafts").isItemExists(email.getSubject());
-        Assert.assertTrue(isSavedInDrafts, "Item is not saved in drafts");
-    }
-
-    @Test(dependsOnMethods = "composeAndSave")
-    public void checkFields() {
-        new MailActionsPage(driver).selectDraftItem(email.getSubject());
-        String receiver = new MailActionsPage(driver).getReceiver(email.getReceiver());
-        String subject = new MailActionsPage(driver).getSubject();
-        String content = new MailActionsPage(driver).getContent();
-        Assert.assertEquals(receiver, email.getReceiver(), "Invalid receiver");
-        Assert.assertEquals(subject, email.getSubject(), "Invalid subject");
-        Assert.assertEquals(content, email.getContent(), "Invalid content");
-    }
-
-    @Test(dependsOnMethods = "checkFields")
-    public void send() {
-        boolean isSent = new MailActionsPage(driver).sendMail().goToFolder("Sent Mail").isItemExists(email.getSubject());
+    public void composeAndSend() {
+        String content = new ExtendedEmail(new SimpleMail(MailTemplates.content).getContent())
+                .setGreetingsAndSignature(email.getReceiver(), user.getUserName());
+        Logger.info("Compose and send mail test is starting");
+        boolean isSent = new MailActionsPage(driver).composeAndSaveAsDraft(email.getReceiver(),
+                email.getSubject(), content).goToFolder("Sent").isItemExists(email.getSubject());
         Assert.assertTrue(isSent, "Item is not sent");
-    }
-
-    @Test(dependsOnMethods = "send")
-    public void checkDraft() {
-        boolean isAbsent = new MailActionsPage(driver).goToFolder("Drafts").isDraftEmpty();
-        Assert.assertTrue(isAbsent, "Item exists in draft folder.");
+        Logger.info("composeAndSend successfully completed");
     }
 
     @AfterClass
     public void quit() {
+        Logger.info("Finished");
         new MailActionsPage(driver).logOut();
         driver.quit();
     }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="DesignPatterns">
+    <test name="test for chrome">
+        <parameter name ="browserType" value="chrome"/>
+        <classes>
+            <class name ="tests.LoginAndSendEmailTest"/>
+        </classes>
+    </test>
+    <test name="test for ff">
+        <parameter name ="browserType" value="firefox"/>
+        <classes>
+            <class name ="tests.LoginAndSendEmailTest"/>
+        </classes>
+    </test>
+    <test name="test for IE">
+        <parameter name ="browserType" value="ie"/>
+        <classes>
+            <class name ="tests.LoginAndSendEmailTest"/>
+        </classes>
+    </test>
+</suite>
