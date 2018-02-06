@@ -1,9 +1,26 @@
 package factory;
 
-import org.openqa.selenium.WebDriver;
+import singleton.Logger;
 
-public abstract class DriverFactory {
-    protected WebDriver driver;
+public class DriverFactory {
 
-    public abstract WebDriver createDriver();
+    public static Driver getDriver(DriverType type) {
+
+        Driver driver = null;
+
+        switch (type) {
+            case CHROME:
+                driver = new ChromeDriverInstance();
+                break;
+            case FIREFOX:
+                driver = new FirefoxDriverInstance();
+                break;
+            default:
+                Logger.getInstance().error("Please specify the driver type");
+                break;
+        }
+        return driver;
+    }
+
+
 }
