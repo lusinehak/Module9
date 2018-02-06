@@ -10,7 +10,7 @@ public class ChromeDriverInstance extends Driver {
 
     @Override
     public WebDriver createDriver() {
-        System.setProperty("webdriver.chrome.driver", "chromedriver");
+        System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
         driver = new ChromeDriver();
         return driver;
     }

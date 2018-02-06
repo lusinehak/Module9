@@ -22,7 +22,7 @@ public class LoginAndSendEmailTest {
     @BeforeClass()
     public void init() {
 
-        driver = DriverFactory.getDriver(DriverType.CHROME);
+        driver = DriverFactory.getDriver(DriverType.FIREFOX);
         webDriver = driver.createDriver();
         if (webDriver == null) {
             System.exit(1);
